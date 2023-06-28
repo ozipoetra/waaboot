@@ -3,10 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"math/rand"
 	"os"
 	"os/signal"
+	"net/http"
 	"strconv"
 	"strings"
 	"syscall"
@@ -14,7 +16,8 @@ import (
 	"github.com/fatih/color"
 	"github.com/joho/godotenv"
 	_ "github.com/mattn/go-sqlite3"
-	qrterminal "github.com/mdp/qrterminal/v3"
+	//qrterminal "github.com/mdp/qrterminal/v3"
+	qrcode "github.com/skip2/go-qrcode"
 	"github.com/sashabaranov/go-openai"
 	"go.mau.fi/whatsmeow"
 	waProto "go.mau.fi/whatsmeow/binary/proto"
@@ -32,6 +35,15 @@ func goDotEnvVariable(key string) string {
 		log.Fatalf("Error loading .env file")
 	}
 	return os.Getenv(key)
+}
+
+func XhandleRequest(w http.ResponseWriter, r *http.Request) {
+    buf, err := ioutil.ReadFile("qr.png")
+    if err != nil {
+        fmt.Println(err)
+    }
+    w.Header().Set("Content-Type", "image/png")
+    w.Write(buf)
 }
 
 // defining struct to use client inside eventHandler as suggested by the docs
@@ -206,7 +218,7 @@ func main() {
 		panic(err)
 	}
 
-	clientLog := waLog.Stdout("Client", "DEBUG", true)
+	clientLog := waLog.Stdout("Client", "INFO", true)
 	client := whatsmeow.NewClient(deviceStore, clientLog)
 
 	// Setting up var with type MyClient struct to use client inside eventHandler as suggested by the docs
@@ -225,8 +237,12 @@ func main() {
 				// Render the QR code here
 				// e.g. qrterminal.GenerateHalfBlock(evt.Code, qrterminal.L, os.Stdout)
 				// or just manually `echo 2@... | qrencode -t ansiutf8` in a terminal
-				qrterminal.GenerateHalfBlock(evt.Code, qrterminal.L, os.Stdout)
-				// fmt.Println("QR code:", evt.Code)
+				qrcode.WriteFile(evt.Code, qrcode.High, 512, "qr.png")
+					// http request untuk login
+			    handler := http.HandlerFunc(XhandleRequest)
+			    http.Handle("/login", handler)
+          cyanBackground.Printf("Server started at port 3000")
+          http.ListenAndServe(":3000", nil)
 			} else {
 				fmt.Println("Login event:", evt.Event)
 			}
