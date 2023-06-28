@@ -8,7 +8,7 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.17
 	github.com/sashabaranov/go-openai v1.12.0
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
-	github.com/taigrr/elevenlabs v0.0.6
+	github.com/taigrr/elevenlabs v0.0.4
 	go.mau.fi/whatsmeow v0.0.0-20230621213630-12cd3cdb2257
 	google.golang.org/protobuf v1.31.0
 )
